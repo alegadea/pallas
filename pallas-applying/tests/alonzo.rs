@@ -1296,7 +1296,7 @@ mod alonzo_tests {
         match validate(&metx, &utxos, &env) {
             Ok(()) => assert!(
                 false,
-                "Transaction network ID should match environment network_id"
+                "Transaction network ID should match environment network ID"
             ),
             Err(err) => match err {
                 Alonzo(AlonzoError::TxWrongNetworkID) => (),
