@@ -2599,7 +2599,7 @@ mod alonzo_tests {
             network_id: 1,
         };
         match validate(&metx, &utxos, &env) {
-            Ok(()) => assert!(false, "Unneeded redeemer"),
+            Ok(()) => assert!(false, "Output minimum lovelace is unreached"),
             Err(err) => match err {
                 Alonzo(AlonzoError::MinLovelaceUnreached) => (),
                 _ => assert!(false, "Unexpected error ({:?})", err),
