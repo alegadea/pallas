@@ -2005,7 +2005,10 @@ mod alonzo_tests {
             network_id: 1,
         };
         match validate(&metx, &utxos, &env) {
-            Ok(()) => assert!(false, "Minting policy is not supported by native script"),
+            Ok(()) => assert!(
+                false,
+                "Minting policy is not supported by the correponding native script"
+            ),
             Err(err) => match err {
                 Alonzo(AlonzoError::MintingLacksPolicy) => (),
                 _ => assert!(false, "Unexpected error ({:?})", err),
