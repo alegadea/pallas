@@ -1243,7 +1243,7 @@ mod alonzo_tests {
         match validate(&metx, &utxos, &env) {
             Ok(()) => assert!(
                 false,
-                "Transaction network ID should match environment network_id"
+                "Output network ID should match environment network ID"
             ),
             Err(err) => match err {
                 Alonzo(AlonzoError::OutputWrongNetworkID) => (),
@@ -2643,7 +2643,7 @@ mod alonzo_tests {
             network_id: 1,
         };
         match validate(&metx, &utxos, &env) {
-            Ok(()) => assert!(false, "Unneeded redeemer"),
+            Ok(()) => assert!(false, "Max value size exceeded"),
             Err(err) => match err {
                 Alonzo(AlonzoError::MaxValSizeExceeded) => (),
                 _ => assert!(false, "Unexpected error ({:?})", err),
