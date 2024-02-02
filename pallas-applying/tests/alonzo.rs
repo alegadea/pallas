@@ -2558,7 +2558,7 @@ mod alonzo_tests {
             network_id: 1,
         };
         match validate(&metx, &utxos, &env) {
-            Ok(()) => assert!(false, "Unneeded redeemer"),
+            Ok(()) => assert!(false, "Transaction auxiliary data removed"),
             Err(err) => match err {
                 Alonzo(AlonzoError::MetadataHash) => (),
                 _ => assert!(false, "Unexpected error ({:?})", err),
