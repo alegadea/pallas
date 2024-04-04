@@ -58,7 +58,7 @@ pub fn validate_babbage_tx(
 }
 
 // The set of transaction inputs is not empty.
-fn check_ins_not_empty(tx_body: &MintedTransactionBody) -> ValidationResult {
+pub fn check_ins_not_empty(tx_body: &MintedTransactionBody) -> ValidationResult {
     if tx_body.inputs.is_empty() {
         return Err(Babbage(TxInsEmpty));
     }
