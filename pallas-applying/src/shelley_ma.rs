@@ -86,14 +86,14 @@ pub fn validate_shelley_ma_tx(
     check_minting(tx_body, mtx)
 }
 
-fn check_ins_not_empty(tx_body: &TransactionBody) -> ValidationResult {
+pub fn check_ins_not_empty(tx_body: &TransactionBody) -> ValidationResult {
     if tx_body.inputs.is_empty() {
         return Err(ShelleyMA(TxInsEmpty));
     }
     Ok(())
 }
 
-fn check_ins_in_utxos(tx_body: &TransactionBody, utxos: &UTxOs) -> ValidationResult {
+pub fn check_ins_in_utxos(tx_body: &TransactionBody, utxos: &UTxOs) -> ValidationResult {
     for input in tx_body.inputs.iter() {
         if !(utxos.contains_key(&MultiEraInput::from_alonzo_compatible(input))) {
             return Err(ShelleyMA(InputNotInUTxO));
@@ -102,7 +102,7 @@ fn check_ins_in_utxos(tx_body: &TransactionBody, utxos: &UTxOs) -> ValidationRes
     Ok(())
 }
 
-fn check_ttl(tx_body: &TransactionBody, block_slot: &u64) -> ValidationResult {
+pub fn check_ttl(tx_body: &TransactionBody, block_slot: &u64) -> ValidationResult {
     match tx_body.ttl {
         Some(ttl) => {
             if ttl < *block_slot {
@@ -115,14 +115,14 @@ fn check_ttl(tx_body: &TransactionBody, block_slot: &u64) -> ValidationResult {
     }
 }
 
-fn check_tx_size(size: &u32, prot_pps: &ShelleyProtParams) -> ValidationResult {
+pub fn check_tx_size(size: &u32, prot_pps: &ShelleyProtParams) -> ValidationResult {
     if *size > prot_pps.max_transaction_size {
         return Err(ShelleyMA(MaxTxSizeExceeded));
     }
     Ok(())
 }
 
-fn check_min_lovelace(
+pub fn check_min_lovelace(
     tx_body: &TransactionBody,
     prot_pps: &ShelleyProtParams,
     era: &Era,
@@ -142,7 +142,7 @@ fn check_min_lovelace(
     Ok(())
 }
 
-fn compute_min_lovelace(output: &TransactionOutput, prot_pps: &ShelleyProtParams) -> u64 {
+pub fn compute_min_lovelace(output: &TransactionOutput, prot_pps: &ShelleyProtParams) -> u64 {
     match &output.amount {
         Value::Coin(_) => prot_pps.min_utxo_value,
         Value::Multiasset(lovelace, _) => {
@@ -153,7 +153,7 @@ fn compute_min_lovelace(output: &TransactionOutput, prot_pps: &ShelleyProtParams
     }
 }
 
-fn check_preservation_of_value(
+pub fn check_preservation_of_value(
     tx_body: &TransactionBody,
     utxos: &UTxOs,
     stk_dep_count: &u64,
@@ -171,7 +171,7 @@ fn check_preservation_of_value(
     }
 }
 
-fn get_consumed(
+pub fn get_consumed(
     tx_body: &TransactionBody,
     utxos: &UTxOs,
     stk_refund_count: &u64,
@@ -211,7 +211,7 @@ fn get_consumed(
     Ok(res)
 }
 
-fn get_produced(
+pub fn get_produced(
     tx_body: &TransactionBody,
     stk_dep_count: &u64,
     pool_count: &u64,
@@ -237,7 +237,7 @@ fn get_produced(
     Ok(res)
 }
 
-fn check_fees(
+pub fn check_fees(
     tx_body: &TransactionBody,
     size: &u32,
     prot_pps: &ShelleyProtParams,
@@ -248,7 +248,7 @@ fn check_fees(
     Ok(())
 }
 
-fn check_network_id(tx_body: &TransactionBody, network_id: &u8) -> ValidationResult {
+pub fn check_network_id(tx_body: &TransactionBody, network_id: &u8) -> ValidationResult {
     for output in tx_body.outputs.iter() {
         let addr: ShelleyAddress =
             get_shelley_address(&output.address).ok_or(ShelleyMA(AddressDecoding))?;
@@ -259,7 +259,7 @@ fn check_network_id(tx_body: &TransactionBody, network_id: &u8) -> ValidationRes
     Ok(())
 }
 
-fn check_metadata(tx_body: &TransactionBody, mtx: &MintedTx) -> ValidationResult {
+pub fn check_metadata(tx_body: &TransactionBody, mtx: &MintedTx) -> ValidationResult {
     match (
         &tx_body.auxiliary_data_hash,
         aux_data_from_alonzo_minted_tx(mtx),
@@ -278,7 +278,7 @@ fn check_metadata(tx_body: &TransactionBody, mtx: &MintedTx) -> ValidationResult
     }
 }
 
-fn check_witnesses(
+pub fn check_witnesses(
     tx_body: &TransactionBody,
     tx_wits: &MintedWitnessSet,
     utxos: &UTxOs,
@@ -323,7 +323,7 @@ fn check_witnesses(
     check_remaining_vk_wits(vk_wits, tx_hash)
 }
 
-fn check_vk_wit(
+pub fn check_vk_wit(
     payment_key_hash: &PaymentKeyHash,
     data_to_verify: &[u8],
     wits: &mut [(bool, VKeyWitness)],
@@ -341,7 +341,7 @@ fn check_vk_wit(
     Err(ShelleyMA(MissingVKWitness))
 }
 
-fn check_native_script_witness(
+pub fn check_native_script_witness(
     script_hash: &ScriptHash,
     wits: &Option<Vec<NativeScript>>,
 ) -> ValidationResult {
@@ -360,7 +360,7 @@ fn check_native_script_witness(
     }
 }
 
-fn check_remaining_vk_wits(
+pub fn check_remaining_vk_wits(
     wits: &mut Vec<(bool, VKeyWitness)>,
     data_to_verify: &[u8],
 ) -> ValidationResult {
@@ -376,7 +376,7 @@ fn check_remaining_vk_wits(
     Ok(())
 }
 
-fn check_minting(tx_body: &TransactionBody, mtx: &MintedTx) -> ValidationResult {
+pub fn check_minting(tx_body: &TransactionBody, mtx: &MintedTx) -> ValidationResult {
     match &tx_body.mint {
         Some(minted_value) => {
             let native_script_wits: Vec<NativeScript> =
@@ -401,7 +401,7 @@ fn check_minting(tx_body: &TransactionBody, mtx: &MintedTx) -> ValidationResult 
     }
 }
 
-fn compute_script_hash(script: &NativeScript) -> PolicyId {
+pub fn compute_script_hash(script: &NativeScript) -> PolicyId {
     let mut payload = Vec::new();
     let _ = encode(script, &mut payload);
     payload.insert(0, 0);
@@ -411,7 +411,7 @@ fn compute_script_hash(script: &NativeScript) -> PolicyId {
 // Checks all certificates in order, and counts the relevant ones for computing
 // deposits.
 #[allow(clippy::too_many_arguments)]
-fn check_certificates(
+pub fn check_certificates(
     cert_opt: &Option<Vec<Certificate>>,
     tx_ix: TransactionIndex,
     cert_state: &mut CertState,
@@ -502,7 +502,7 @@ fn check_certificates(
     }
 }
 
-fn check_stake_registration(
+pub fn check_stake_registration(
     stc: &StakeCredential,
     ptr: &CertPointer,
     ds: &mut DState,
@@ -516,7 +516,7 @@ fn check_stake_registration(
     insert_or_err(&mut ds.ptrs, ptr, stc, ShelleyMA(PointerInUse))
 }
 
-fn check_stake_deregistration(stc: &StakeCredential, ds: &mut DState) -> ValidationResult {
+pub fn check_stake_deregistration(stc: &StakeCredential, ds: &mut DState) -> ValidationResult {
     match ds.rewards.get(stc) {
         None => Err(ShelleyMA(KeyNotRegistered)),
         Some(0) => {
@@ -529,7 +529,7 @@ fn check_stake_deregistration(stc: &StakeCredential, ds: &mut DState) -> Validat
     }
 }
 
-fn check_stake_delegation(
+pub fn check_stake_delegation(
     stc: &StakeCredential,
     pk: &PoolKeyhash,
     ds: &mut DState,
@@ -547,7 +547,12 @@ fn check_stake_delegation(
 
 // Inserts a key-value pair if the key is not already in use, otherwise return
 // the provided error.
-fn insert_or_err<K, V, E>(map: &mut HashMap<K, V>, key: &K, value: &V, error: E) -> Result<(), E>
+pub fn insert_or_err<K, V, E>(
+    map: &mut HashMap<K, V>,
+    key: &K,
+    value: &V,
+    error: E,
+) -> Result<(), E>
 where
     K: Eq,
     K: std::hash::Hash,
@@ -562,7 +567,7 @@ where
     }
 }
 
-fn check_pool_reg_or_update(
+pub fn check_pool_reg_or_update(
     pool_hash: &PoolKeyhash,
     pool_param: &PoolParam,
     min_pool_cost: &Coin,
@@ -582,7 +587,7 @@ fn check_pool_reg_or_update(
     }
 }
 
-fn check_pool_retirement(
+pub fn check_pool_retirement(
     pool_hash: &PoolKeyhash,
     repoch: &Epoch,
     cepoch: &Epoch,
@@ -600,7 +605,7 @@ fn check_pool_retirement(
     }
 }
 
-fn check_genesis_key_delegation(
+pub fn check_genesis_key_delegation(
     gkh: &Genesishash,
     dkh: &GenesisDelegateHash, // called `vkh` in specs
     vrf: &VrfKeyhash,
@@ -640,7 +645,7 @@ fn check_genesis_key_delegation(
     }
 }
 
-fn check_mir(
+pub fn check_mir(
     mir: &MoveInstantaneousReward,
     slot: &Slot,
     stab_win: &Slot,
@@ -679,17 +684,17 @@ fn check_mir(
 
 #[inline]
 // Called just `epoch` in specs
-fn to_epoch(genesis: &GenesisValues, slot: &Slot) -> Epoch {
+pub fn to_epoch(genesis: &GenesisValues, slot: &Slot) -> Epoch {
     genesis.absolute_slot_to_relative(*slot).0
 }
 
 #[inline]
 // CamelCase in specs
-fn first_slot(genesis: &GenesisValues, epoch: &Epoch) -> Slot {
+pub fn first_slot(genesis: &GenesisValues, epoch: &Epoch) -> Slot {
     genesis.relative_slot_to_absolute(*epoch, 0)
 }
 
-fn check_native_scripts(
+pub fn check_native_scripts(
     vkey_wits: &Vec<VKeyWitness>, // changed from alonzo
     native_scripts: &Vec<NativeScript>,
     low_bnd: &Option<u64>,
@@ -703,7 +708,7 @@ fn check_native_scripts(
     Ok(())
 }
 
-fn eval_native_script(
+pub fn eval_native_script(
     vkey_wits: &Vec<VKeyWitness>, // changed from alonzo
     native_script: &NativeScript,
     low_bnd: &Option<u64>,
