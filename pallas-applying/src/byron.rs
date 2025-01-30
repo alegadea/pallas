@@ -39,21 +39,21 @@ pub fn validate_byron_tx(
     check_witnesses(mtxp, utxos, prot_magic)
 }
 
-fn check_ins_not_empty(tx: &Tx) -> ValidationResult {
+pub fn check_ins_not_empty(tx: &Tx) -> ValidationResult {
     if tx.inputs.clone().to_vec().is_empty() {
         return Err(Byron(TxInsEmpty));
     }
     Ok(())
 }
 
-fn check_outs_not_empty(tx: &Tx) -> ValidationResult {
+pub fn check_outs_not_empty(tx: &Tx) -> ValidationResult {
     if tx.outputs.clone().to_vec().is_empty() {
         return Err(Byron(TxOutsEmpty));
     }
     Ok(())
 }
 
-fn check_ins_in_utxos(tx: &Tx, utxos: &UTxOs) -> ValidationResult {
+pub fn check_ins_in_utxos(tx: &Tx, utxos: &UTxOs) -> ValidationResult {
     for input in tx.inputs.iter() {
         if !(utxos.contains_key(&MultiEraInput::from_byron(input))) {
             return Err(Byron(InputNotInUTxO));
@@ -62,7 +62,7 @@ fn check_ins_in_utxos(tx: &Tx, utxos: &UTxOs) -> ValidationResult {
     Ok(())
 }
 
-fn check_outs_have_lovelace(tx: &Tx) -> ValidationResult {
+pub fn check_outs_have_lovelace(tx: &Tx) -> ValidationResult {
     for output in tx.outputs.iter() {
         if output.amount == 0 {
             return Err(Byron(OutputWithoutLovelace));
@@ -71,7 +71,12 @@ fn check_outs_have_lovelace(tx: &Tx) -> ValidationResult {
     Ok(())
 }
 
-fn check_fees(tx: &Tx, size: &u64, utxos: &UTxOs, prot_pps: &ByronProtParams) -> ValidationResult {
+pub fn check_fees(
+    tx: &Tx,
+    size: &u64,
+    utxos: &UTxOs,
+    prot_pps: &ByronProtParams,
+) -> ValidationResult {
     let mut inputs_balance: u64 = 0;
     let mut only_redeem_utxos: bool = true;
     for input in tx.inputs.iter() {
@@ -103,7 +108,7 @@ fn check_fees(tx: &Tx, size: &u64, utxos: &UTxOs, prot_pps: &ByronProtParams) ->
     }
 }
 
-fn is_redeem_utxo(input: &TxIn, utxos: &UTxOs) -> bool {
+pub fn is_redeem_utxo(input: &TxIn, utxos: &UTxOs) -> bool {
     match find_tx_out(input, utxos) {
         Ok(tx_out) => {
             let address: ByronAddress = mk_byron_address(&tx_out.address);
@@ -116,14 +121,14 @@ fn is_redeem_utxo(input: &TxIn, utxos: &UTxOs) -> bool {
     }
 }
 
-fn check_size(size: &u64, prot_pps: &ByronProtParams) -> ValidationResult {
+pub fn check_size(size: &u64, prot_pps: &ByronProtParams) -> ValidationResult {
     if *size > prot_pps.max_tx_size {
         return Err(Byron(MaxTxSizeExceeded));
     }
     Ok(())
 }
 
-fn get_tx_size(mtxp: &MintedTxPayload) -> u64 {
+pub fn get_tx_size(mtxp: &MintedTxPayload) -> u64 {
     (mtxp.transaction.raw_cbor().len() + mtxp.witness.raw_cbor().len()) as u64
 }
 
@@ -132,7 +137,11 @@ pub enum TaggedSignature<'a> {
     RedeemWitness(&'a ByronSignature),
 }
 
-fn check_witnesses(mtxp: &MintedTxPayload, utxos: &UTxOs, prot_magic: &u32) -> ValidationResult {
+pub fn check_witnesses(
+    mtxp: &MintedTxPayload,
+    utxos: &UTxOs,
+    prot_magic: &u32,
+) -> ValidationResult {
     let tx: &Tx = &mtxp.transaction;
     let tx_hash: Hash<32> = mtxp.transaction.original_hash();
     let witnesses: Vec<(&PubKey, TaggedSignature)> = tag_witnesses(&mtxp.witness)?;
@@ -150,7 +159,7 @@ fn check_witnesses(mtxp: &MintedTxPayload, utxos: &UTxOs, prot_magic: &u32) -> V
     Ok(())
 }
 
-fn tag_witnesses(wits: &[Twit]) -> Result<Vec<(&PubKey, TaggedSignature)>, ValidationError> {
+pub fn tag_witnesses(wits: &[Twit]) -> Result<Vec<(&PubKey, TaggedSignature)>, ValidationError> {
     let mut res: Vec<(&PubKey, TaggedSignature)> = Vec::new();
     for wit in wits.iter() {
         match wit {
@@ -166,7 +175,7 @@ fn tag_witnesses(wits: &[Twit]) -> Result<Vec<(&PubKey, TaggedSignature)>, Valid
     Ok(res)
 }
 
-fn find_tx_out<'a>(input: &'a TxIn, utxos: &'a UTxOs) -> Result<&'a TxOut, ValidationError> {
+pub fn find_tx_out<'a>(input: &'a TxIn, utxos: &'a UTxOs) -> Result<&'a TxOut, ValidationError> {
     let key: MultiEraInput = MultiEraInput::Byron(Box::new(Cow::Borrowed(input)));
     utxos
         .get(&key)
@@ -175,7 +184,7 @@ fn find_tx_out<'a>(input: &'a TxIn, utxos: &'a UTxOs) -> Result<&'a TxOut, Valid
         .ok_or(Byron(InputNotInUTxO))
 }
 
-fn find_raw_witness<'a>(
+pub fn find_raw_witness<'a>(
     tx_out: &TxOut,
     witnesses: &'a Vec<(&'a PubKey, TaggedSignature<'a>)>,
 ) -> Result<(&'a PubKey, &'a TaggedSignature<'a>), ValidationError> {
@@ -197,11 +206,11 @@ fn find_raw_witness<'a>(
     Err(Byron(MissingWitness))
 }
 
-fn mk_byron_address(addr: &Address) -> ByronAddress {
+pub fn mk_byron_address(addr: &Address) -> ByronAddress {
     ByronAddress::new((*addr.payload.0).as_slice(), addr.crc)
 }
 
-fn redeems(
+pub fn redeems(
     pub_key: &PubKey,
     sign: &TaggedSignature,
     root: &AddressId,
@@ -214,14 +223,14 @@ fn redeems(
     hash_to_check == *root && convert_to_addr_type(sign) == *addr_type
 }
 
-fn convert_to_addr_type(sign: &TaggedSignature) -> AddrType {
+pub fn convert_to_addr_type(sign: &TaggedSignature) -> AddrType {
     match sign {
         TaggedSignature::PkWitness(_) => AddrType::PubKey,
         TaggedSignature::RedeemWitness(_) => AddrType::Redeem,
     }
 }
 
-fn mk_spending_data(pub_key: &PubKey, addr_type: &AddrType) -> SpendingData {
+pub fn mk_spending_data(pub_key: &PubKey, addr_type: &AddrType) -> SpendingData {
     match addr_type {
         AddrType::PubKey => SpendingData::PubKey(pub_key.clone()),
         AddrType::Redeem => SpendingData::Redeem(pub_key.clone()),
@@ -229,13 +238,13 @@ fn mk_spending_data(pub_key: &PubKey, addr_type: &AddrType) -> SpendingData {
     }
 }
 
-fn get_verification_key(pk: &PubKey) -> PublicKey {
+pub fn get_verification_key(pk: &PubKey) -> PublicKey {
     let mut trunc_len: [u8; PublicKey::SIZE] = [0; PublicKey::SIZE];
     trunc_len.copy_from_slice(&pk.as_slice()[0..PublicKey::SIZE]);
     From::<[u8; PublicKey::SIZE]>::from(trunc_len)
 }
 
-fn get_data_to_verify(
+pub fn get_data_to_verify(
     sign: &TaggedSignature,
     prot_magic: &u32,
     tx_hash: &Hash<32>,
@@ -259,7 +268,7 @@ fn get_data_to_verify(
     Ok(enc.into_writer().clone())
 }
 
-fn get_signature(tagged_signature: &TaggedSignature<'_>) -> Signature {
+pub fn get_signature(tagged_signature: &TaggedSignature<'_>) -> Signature {
     let inner_sig = match tagged_signature {
         TaggedSignature::PkWitness(sign) => sign,
         TaggedSignature::RedeemWitness(sign) => sign,
